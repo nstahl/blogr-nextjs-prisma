@@ -1,0 +1,43 @@
+// This is Prisma's main configuration file, similar to other ORM config files
+// like Sequelize's config.json or TypeORM's ormconfig.json
+
+generator client {
+  provider = "prisma-client-js"  // Generates the Prisma Client, similar to Django's models.py auto-generated fields
+}
+
+datasource db {
+  provider = "postgresql"
+  // Connection strings are stored in environment variables, similar to Django's DATABASE settings in settings.py
+  url = env("POSTGRES_PRISMA_URL") 
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+// Models in Prisma are similar to:
+// - Django Models (defined in models.py)
+// - Mongoose Schemas
+// - Sequelize Models
+// - TypeORM Entities
+model Post {
+  id        String     @default(cuid()) @id    // Like Django's AutoField or UUIDField with primary_key=True
+  title     String                             // Similar to Django's CharField(null=False)
+  content   String?                            // Like Django's CharField(null=True, blank=True)
+  published Boolean @default(false)            // Similar to Django's BooleanField(default=False)
+  // This defines a many-to-one relationship with User
+  // Similar to Django's ForeignKey(User, on_delete=models.CASCADE, null=True)
+  author    User?   @relation(fields: [authorId], references: [id])
+  authorId  String?
+}
+
+model User {
+  id            String       @default(cuid()) @id  // Like Django's AutoField or UUIDField
+  name          String?                            // Like Django's CharField(null=True)
+  email         String?   @unique                  // Like Django's EmailField(unique=True, null=True)
+  // Similar to Django's auto_now_add=True and auto_now=True
+  createdAt     DateTime  @default(now()) @map(name: "created_at")
+  updatedAt     DateTime  @updatedAt @map(name: "updated_at")
+  // This defines a one-to-many relationship with Post
+  // In Django, this would be automatically created by the ForeignKey in Post
+  posts         Post[]
+  // Similar to Django's db_table Meta option
+  @@map(name: "users")
+}
